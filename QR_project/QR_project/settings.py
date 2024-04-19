@@ -1,6 +1,8 @@
 from datetime import timedelta
 from pathlib import Path
 
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -146,4 +148,27 @@ AUTHENTICATION_BACKENDS = [
      # Custom backend for Lecturer model
     # Add any other authentication backends if needed
 ]
+
+# settings.py
+
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_ALLOW_ALL_ORIGINS = True
+WHITENOISE_INDEX_FILE = True
+
+# Whitelist URL patterns
+WHITENOISE_MIDDLEWARE_ARGUMENTS = {
+    'swagger/': {
+        'index.html': {
+            'content_type': 'text/html',
+            'cache_control': 'no-cache',
+        },
+        'swagger-ui-bundle.js': {
+            'content_type': 'application/javascript',
+            'cache_control': 'no-cache',
+        },
+        # Add more URL patterns and their respective file settings here
+    }
+}
+
 
