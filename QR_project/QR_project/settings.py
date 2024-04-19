@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-v$ot4&g(y3jzp^f@y437m&&e^uiz7qwvt9l^bfhfb1be+4f==2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -146,3 +146,4 @@ AUTHENTICATION_BACKENDS = [
      # Custom backend for Lecturer model
     # Add any other authentication backends if needed
 ]
+
