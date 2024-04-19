@@ -1,60 +1,23 @@
-# models.py
-
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin,Group,Permission
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.db import models
 
-class StudentManager(BaseUserManager):
-    def create_user(self, student_id, password=None, username=None, first_name=None, last_name=None):
-        if not student_id:
-            raise ValueError('Students must have a student ID')
+class CustomUserManager(BaseUserManager):
+    def create_student(self, email, password=None, username=None, first_name=None, last_name=None):
+        if not email:
+            raise ValueError('Students must have a  Valid school Email')
 
         user = self.model(
-            student_id=student_id,
+            email=email,
             username=username,
             first_name=first_name,
             last_name=last_name,
+            is_student=True,  # Add a field to distinguish student
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, student_id, password=None, username=None, first_name=None, last_name=None):
-        user = self.create_user(
-            student_id=student_id,
-            password=password,
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-        )
-        user.is_admin = True
-        user.is_staff = True
-        user.save(using=self._db)
-        return user
-
-class Student(AbstractBaseUser, PermissionsMixin):
-    student_id = models.CharField(max_length=20, unique=True)
-    username = models.CharField(max_length=150)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    password = models.CharField(max_length=128)
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
-
-    groups = models.ManyToManyField(Group, blank=True, related_name='student_groups')  # Specify related_name
-    user_permissions = models.ManyToManyField(Permission, blank=True, related_name='student_permissions')  # Specify related_name
-
-
-    objects = StudentManager()
-
-    USERNAME_FIELD = 'student_id'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-
-    def __str__(self):
-        return self.student_id
-
-class LecturerManager(BaseUserManager):
-    def create_user(self, email, password=None, username=None, first_name=None, last_name=None):
+    def create_lecturer(self, email, password=None, username=None, first_name=None, last_name=None,**extra_fields):
         if not email:
             raise ValueError('Lecturers must have an email address')
 
@@ -63,41 +26,44 @@ class LecturerManager(BaseUserManager):
             username=username,
             first_name=first_name,
             last_name=last_name,
+            is_student=False,  # Add a field to distinguish lecturer
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
-
-    def create_superuser(self, email, password=None, username=None, first_name=None, last_name=None):
-        user = self.create_user(
-            email=email,
-            password=password,
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-        )
-        user.is_admin = True
-        user.is_staff = True
-        user.save(using=self._db)
+    
+    def create_user(self, email, password, **extra_fields):
+        email = self.normalize_email(email)
+        user =self.model(email=email,**extra_fields)
+        user.set_password(password)
+        user.save()
         return user
 
-class Lecturer(AbstractBaseUser, PermissionsMixin):
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(email, password, **extra_fields)
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    student_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     email = models.EmailField(verbose_name='email address', max_length=255, unique=True)
-    username = models.CharField(max_length=150)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    username = models.CharField(max_length=150,null=True, blank=True)
+    first_name = models.CharField(max_length=30,null=True, blank=True)
+    last_name = models.CharField(max_length=30,null=True, blank=True)
     password = models.CharField(max_length=128)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    
-    groups = models.ManyToManyField(Group, blank=True, related_name='lecturer_groups') 
-    user_permissions = models.ManyToManyField(Permission, blank=True, related_name='lecturer_permissions') # Specify related_name
+    is_student = models.BooleanField(default=True)  # Field to distinguish student or lecturer
 
-    objects = LecturerManager()
+    
+    objects = CustomUserManager()
+
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
+        
+    
     def __str__(self):
         return self.email

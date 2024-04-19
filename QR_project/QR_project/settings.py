@@ -132,7 +132,17 @@ REST_FRAMEWORK = {
     ),
 }
 
+AUTH_USER_MODEL = 'authentication.CustomUser'  # Assuming 'your_app' is the name of your Django app containing the Lecturer model
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),  # Adjust as needed
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # Adjust as needed
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  
+    'authentication.backend.StudentAuthenticationBackend',  # Custom backend for Student model
+    'authentication.backend.LecturerAuthenticationBackend',
+     # Custom backend for Lecturer model
+    # Add any other authentication backends if needed
+]
