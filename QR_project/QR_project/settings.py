@@ -120,6 +120,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
+        'SWAGGER_TITLE': 'My API Docs',
+        'PUBLIC': True, 
         'Basic': {
             'type': 'basic'
         }
