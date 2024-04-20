@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,7 +52,7 @@ ROOT_URLCONF = 'QR_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,25 +154,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # settings.py
+STATIC_URL = '/static/'
 
-WHITENOISE_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_ALLOW_ALL_ORIGINS = True
-WHITENOISE_INDEX_FILE = True
-
-# Whitelist URL patterns
-WHITENOISE_MIDDLEWARE_ARGUMENTS = {
-    'swagger/': {
-        'index.html': {
-            'content_type': 'text/html',
-            'cache_control': 'no-cache',
-        },
-        'swagger-ui-bundle.js': {
-            'content_type': 'application/javascript',
-            'cache_control': 'no-cache',
-        },
-        # Add more URL patterns and their respective file settings here
-    }
-}
-
-
+# This production code might break development mode, so we check whether we're in DEBUG mode
+if not DEBUG:
+    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+    # and renames the files with unique names for each version to support long-term caching
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
