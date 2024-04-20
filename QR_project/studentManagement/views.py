@@ -13,21 +13,26 @@ from .models import StudentCourses
 class GetStudentCourses(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    def get(self,request):
+    
+    def get(self, request):
         try:
-            student=request.user
-            student_courses=StudentCourses.objects.filter(student=student)
-            data_serialized=StudentCoursesSerializer(student_courses)
-            return Response({'message':"student courses retieved successfully",
-                             'data':data_serialized.data,
-                              'success':True})
+            student = request.user
+            student_courses = StudentCourses.objects.filter(student=student)
+            # Ensure the queryset contains multiple objects
+            if student_courses.exists():
+                # Pass the queryset instance to the serializer
+                data_serialized = StudentCoursesSerializer(instance=student_courses, many=True)
+                return Response({'message': "Student courses retrieved successfully",
+                                 'enrolled': data_serialized.data,
+                                 'success': True})
+            else:
+                return Response({'message': 'No courses found for the student',
+                                 'enrolled': [],
+                                 'success': False})
         except Exception as e:
-            return Response({'message':'Error', 
-                             'data':f" error message {e}",
-                             'success':False})
-
-
-
+            return Response({'message': 'Error', 
+                             'enrolled': f"Error message: {e}",
+                             'success': False})
 
 
 class GetStudentDetails(generics.ListAPIView):
