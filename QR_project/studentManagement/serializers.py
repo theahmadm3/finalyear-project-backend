@@ -6,7 +6,7 @@ from .models import StudentCourses
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['email']
+        fields = ['email','first_name','last_name']
 
 class CourseSerializer(serializers.ModelSerializer):
     lecturer = CustomUserSerializer(read_only=True)
@@ -21,9 +21,22 @@ class StudentUserSerializer(serializers.ModelSerializer):
         fields = ['student_id', 'email', 'first_name', 'last_name', 'is_student', 'level', 'department', 'country', 'phone_number']
 
 class StudentCoursesSerializer(serializers.ModelSerializer):
-    course_details =CourseSerializer()  # Nested serializer for the Course model
-    #student = CustomUserSerializer()  # Nested serializer for the CustomUser model
+    course_details = CourseSerializer()  # Nested serializer for the Course model
 
     class Meta:
         model = StudentCourses
         fields = ['course_details']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Remove the "course_details" wrapper and flatten the representation
+        course_data = representation.pop('course_details')
+        # Move the lecturer's email directly under the course data
+        course_data['email'] = course_data['lecturer']['email']
+        course_data['first_name'] = course_data['lecturer']['first_name']
+        course_data['last_name'] = course_data['lecturer']['last_name']
+        # Remove the lecturer key from course_data
+        del course_data['lecturer']
+        # Merge the modified course_data into the representation
+        representation.update(course_data)
+        return representation
