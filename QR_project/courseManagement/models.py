@@ -12,3 +12,7 @@ class Course(models.Model):
         on_delete=models.PROTECT,
         limit_choices_to=Q(is_student=False)
     )
+
+    
+    def __str__(self):
+        return self.title
