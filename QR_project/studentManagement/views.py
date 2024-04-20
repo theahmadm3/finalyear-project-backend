@@ -2,22 +2,22 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication 
 from authentication.models  import CustomUser
-from .serializers import StudentUserSerializer
+from .serializers import StudentUserSerializer,StudentCoursesSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import StudentCourses
-from .serializers import StudentUserSerializer
 
 
-class GetStudentCourse(APIView):
+
+class GetStudentCourses(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self,request):
         try:
             student=request.user
             student_courses=StudentCourses.objects.filter(student=student)
-            data_serialized=StudentUserSerializer(student_courses)
+            data_serialized=StudentCoursesSerializer(student_courses)
             return Response({'message':"student courses retieved successfully",
                              'data':data_serialized.data,
                               'success':True})
