@@ -5,6 +5,30 @@ from authentication.models  import CustomUser
 from .serializers import StudentUserSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import StudentCourses
+from .serializers import StudentUserSerializer
+
+
+class GetStudentCourse(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        try:
+            student=request.user
+            student_courses=StudentCourses.objects.filter(student=student)
+            data_serialized=StudentUserSerializer(student_courses)
+            return Response({'message':"student courses retieved successfully",
+                             'data':data_serialized.data,
+                              'success':True})
+        except Exception as e:
+            return Response({'message':'Error', 
+                             'data':f" error message {e}",
+                             'success':False})
+
+
+
+
 
 class GetStudentDetails(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
