@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'authentication',
     'studentManagement',
-    'courseManagement'
+    'courseManagement',
+    'lecturerManagement'
 ]
 
 MIDDLEWARE = [
