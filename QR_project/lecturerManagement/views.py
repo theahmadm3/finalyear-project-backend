@@ -27,11 +27,11 @@ class GetLecturerCourses(APIView):
                                  'success': True})
             else:
                 return Response({'message': 'No courses found for the lecturer',
-                                 'enrolled': [],
+                                 'teaching': [],
                                  'success': False})
         except Exception as e:
             return Response({'message': 'Error', 
-                             'enrolled': f"Error message: {e}",
+                             'teaching': f"Error message: {e}",
                              'success': False})
 
 
