@@ -41,9 +41,28 @@ class GetStudentDetails(generics.ListAPIView):
     serializer_class = StudentUserSerializer
 
     def get_queryset(self):
-        return CustomUser.objects.filter(id=self.request.user.id)
+        user_id = self.request.user.id
+        try:
+            # Fetch the user based on authentication and whether they are a student
+            return CustomUser.objects.get(id=user_id, is_student=True)
+        except CustomUser.DoesNotExist:
+            # If the user is not found or not a student, return None
+            return None
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({"message":"Student data retrieved successfully","user": serializer.data[0],"success":True}, status=status.HTTP_200_OK)
+        if queryset is not None:
+            try:
+                serializer = self.get_serializer(queryset)
+                # Return student data if found
+                return Response({"message": "Student data retrieved successfully", 
+                                 "user": serializer.data, "success": True}, 
+                                status=status.HTTP_200_OK)
+            except Exception as e:
+                # Return error message if serialization fails
+                return Response({"message": str(e), "success": False}, 
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            # Return error message if user is not found or not a student
+            return Response({"message": "User not found or not a student", 
+                             "success": False}, status=status.HTTP_404_NOT_FOUND)
