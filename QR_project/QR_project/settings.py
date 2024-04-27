@@ -122,16 +122,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'SWAGGER_TITLE': 'My API Docs',
-        'PUBLIC': True, 
-        'Basic': {
-            'type': 'basic'
-        }
-    }
-}
 
+#configured swagger for authorization headers
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   }
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -143,8 +144,8 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'authentication.CustomUser'  # Assuming 'your_app' is the name of your Django app containing the Lecturer model
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),  # Adjust as needed
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # Adjust as needed
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365),  # Adjust as needed
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=365),     # Adjust as needed
 }
 
 AUTHENTICATION_BACKENDS = [
