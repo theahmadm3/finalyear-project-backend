@@ -85,7 +85,7 @@ class GetUserDetails(APIView):
                 serialized=lecturerUserSerializer(user)
                 return Response({
                     'success':True,
-                    'message':'student retrieved successfully',
+                    'message':'Lecturer retrieved successfully',
                     'data':serialized.data
                 })
         except Exception as e:
