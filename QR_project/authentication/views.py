@@ -9,6 +9,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from .serializers import CustomUserSerializer
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication 
+from studentManagement.serializers import StudentUserSerializer
+from lecturerManagement.serializers import lecturerUserSerializer
 
 class StudentTokenObtainPairView(TokenObtainPairView):
     serializer_class = StudentTokenObtainPairSerializer
@@ -36,6 +40,8 @@ class LecturerTokenObtainPairView(TokenObtainPairView):
 
 
 class CreateUser(APIView):
+    @swagger_auto_schema(request_body=CustomUserSerializer)
+
     def post(self, request):
         # Get is_student field from request data
         is_student = request.data.get('is_student', None)
@@ -57,3 +63,33 @@ class CreateUser(APIView):
         return Response({'success':False,
                          'message':'User not created successfully',
                         'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class GetUserDetails(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user=request.user
+            if user.is_student:
+                serialized=StudentUserSerializer(user)
+                return Response({
+                    'success':True,
+                    'message':'student retrieved successfully',
+                    'data':serialized.data
+                })
+            
+            else:
+                serialized=lecturerUserSerializer(user)
+                return Response({
+                    'success':True,
+                    'message':'student retrieved successfully',
+                    'data':serialized.data
+                })
+        except Exception as e:
+            return Response({'success':False, 'message':str(e)})
+                
+
+
