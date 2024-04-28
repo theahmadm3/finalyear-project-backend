@@ -4,7 +4,6 @@ from .views import GetLecturerDetails,GetLecturerCourses
 
 
 urlpatterns = [
-    path('get/lecturer',GetLecturerDetails.as_view(),name='lecturer_details'),
     path('get/lecturer_courses',GetLecturerCourses.as_view(),name='lecturer_courses'),
     
 ]
