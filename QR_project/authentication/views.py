@@ -7,8 +7,7 @@ from .serializers import StudentTokenObtainPairSerializer, LecturerTokenObtainPa
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
-from lecturerManagement.serializers import lecturerUserSerializer
-from studentManagement.serializers import StudentUserSerializer
+from .serializers import LecturerUSerSerializer, StudentUserSerializer
 
 class StudentTokenObtainPairView(TokenObtainPairView):
     serializer_class = StudentTokenObtainPairSerializer
@@ -37,20 +36,18 @@ class LecturerTokenObtainPairView(TokenObtainPairView):
 
 class CreateUser(APIView):
     def post(self, request):
-        if request.data['is_student']:
-            serializer = StudentUserSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif request.data['is_student']==False:
-            serializer = lecturerUserSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'success':False,
-                             'message':'Please Add the is_student field'},status=status.HTTP_400_BAD_REQUEST)
-
-    
+        is_student = request.data.get('is_student', None)
+        if is_student is None:
+            return Response({'success': False, 'message': 'Please Add the is_student'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer_class = StudentUserSerializer if is_student else LecturerUserSerializer
+        serializer = serializer_class(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        errors = {}
+        for field, messages in serializer.errors.items():
+            errors[field] = ', '.join(messages)
+        return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
