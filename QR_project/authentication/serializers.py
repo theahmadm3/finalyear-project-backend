@@ -40,13 +40,22 @@ class LecturerTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 
-class LecturerUSerSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    is_student = serializers.BooleanField(write_only=True)
+
     class Meta:
         model = CustomUser
-        fields = '__all__'
-
-
-class StudentUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = '__all__'
+        fields = ['email', 'password', 'is_student', 'username', 'first_name', 'last_name', 'level', 'department', 'country', 'phone_number']
+    
+    
+    def create(self, validated_data):
+        # Extract the password from the validated data
+        password = validated_data.pop('password', None)
+        # Create a new user instance with the remaining validated data
+        user = CustomUser.objects.create(**validated_data)
+        # Set the password for the user
+        if password:
+            user.set_password(password)
+            user.save()
+        return user

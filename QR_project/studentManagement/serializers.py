@@ -19,6 +19,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['student_id', 'email', 'first_name', 'last_name', 'is_student', 'level', 'department', 'country', 'phone_number']
+        ref_name = 'StudentManagementStudentUserSerializer'
 
 class StudentCoursesSerializer(serializers.ModelSerializer):
     course_details = CourseSerializer()  # Nested serializer for the Course model
