@@ -12,7 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication 
 from studentManagement.serializers import StudentUserSerializer
-from lecturerManagement.serializers import lecturerUserSerializer
+from lecturerManagement.serializers import lecturerUserSerializer 
 
 class StudentTokenObtainPairView(TokenObtainPairView):
     serializer_class = StudentTokenObtainPairSerializer
