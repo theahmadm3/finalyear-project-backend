@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'studentManagement',
     'courseManagement',
     'lecturerManagement',
+    'attendance_app'
 ]
 
 MIDDLEWARE = [
@@ -155,6 +156,11 @@ AUTHENTICATION_BACKENDS = [
      # Custom backend for Lecturer model
     # Add any other authentication backends if needed
 ]
+
+TIME_ZONE ='Africa/Lagos'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
 
 # settings.py
 STATIC_URL = '/static/'
