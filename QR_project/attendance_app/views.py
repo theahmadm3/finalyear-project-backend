@@ -75,12 +75,12 @@ class CreateLecturerAttendance(APIView):
             return Response({
                 'success': False,
                 'message': 'The time you are trying to create this lecture is not within bounds of the current time frame'
-            })
+            },status=status.HTTP_400_BAD_REQUEST)
 
         serializer = LectureSerializer(data=request.data)
         if not serializer.is_valid():
             return Response({'success': False, 'message': 'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
-        lecture, created = self.get_or_create_lecture(validated_data)i
+        lecture, created = self.get_or_create_lecture(validated_data)
         return self.process_attendance(lecture, user)
