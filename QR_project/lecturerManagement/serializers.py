@@ -7,7 +7,7 @@ from courseManagement.models import Course
 class lecturerUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['email','first_name','last_name','department','country','phone_number']
+        fields = ['email','first_name','last_name','department','country','phone_number','is_student']
 
 
 class LecturerCoursesSerializer(serializers.ModelSerializer):
