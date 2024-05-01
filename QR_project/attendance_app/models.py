@@ -10,7 +10,7 @@ class Lecture(models.Model):
     lecturer = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        limit_choices_to={'is_student': True}
+        limit_choices_to={'is_student':False}
     )
 
 

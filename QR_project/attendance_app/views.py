@@ -52,7 +52,7 @@ class CreateLecturerAttendance(APIView):
     def checkWithinInterval(self, recent_time, time_frame):
         start_hour, end_hour = map(int, time_frame.split('-'))
         current_hour = int(recent_time.strftime("%H"))
-        return recent_time.date() == timezone.now().date() and start_hour <= current_hour <= end_hour
+        return recent_time.date() == timezone.localtime().date() and min(start_hour,end_hour) <= current_hour <=max(start_hour,end_hour) 
 
     def get_or_create_lecture(self, validated_data):
         lectures = Lecture.objects.filter(
@@ -73,6 +73,7 @@ class CreateLecturerAttendance(APIView):
         location=request.data.get('location')
         course_id=request.data.get('course')
         request.data['lecturer'] = request.user.id
+        print(request.data)
 
         if user.is_student:
             return Response({'success': False, 'message': 'Only a lecturer can start a lecture'}, status=status.HTTP_403_FORBIDDEN)
@@ -80,7 +81,8 @@ class CreateLecturerAttendance(APIView):
         if not self.checkWithinInterval(timezone.localtime(), time_frame):
             return Response({
                 'success': False,
-                'message': 'The time you are trying to create this lecture is not within bounds of the current time frame'
+                'message': 'The time you are trying to create this lecture is not within bounds of the current time frame',
+                'current_time':timezone.localtime().strftime("%H"),
             },status=status.HTTP_400_BAD_REQUEST)
 
         serializer = LectureSerializer(data=request.data)

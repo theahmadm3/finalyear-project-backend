@@ -5,4 +5,4 @@ from rest_framework import serializers
 class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
-        fields ='__all__'
+        fields =['course','location','time_frame']
