@@ -13,6 +13,6 @@ class lecturerUserSerializer(serializers.ModelSerializer):
 class LecturerCoursesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['title','course_code']
+        fields = ['id','title','course_code']
 
     
