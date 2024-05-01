@@ -82,11 +82,5 @@ class CreateLecturerAttendance(APIView):
             return Response({'success': False, 'message': 'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
-        lecture, created = self.get_or_create_lecture(validated_data)
-
-        if not created:
-            serializer.instance = lecture
-
-        lecture = serializer.save()
-
+        lecture, created = self.get_or_create_lecture(validated_data)i
         return self.process_attendance(lecture, user)
