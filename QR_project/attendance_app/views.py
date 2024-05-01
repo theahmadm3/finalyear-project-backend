@@ -67,6 +67,8 @@ class CreateLecturerAttendance(APIView):
     def post(self, request):
         user = request.user
         time_frame = request.data.get('time_frame')
+        location=request.data.get('location')
+        course_id=request.data.get('course_id')
 
         if user.is_student:
             return Response({'success': False, 'message': 'Only a lecturer can start a lecture'}, status=status.HTTP_403_FORBIDDEN)
@@ -83,4 +85,8 @@ class CreateLecturerAttendance(APIView):
 
         validated_data = serializer.validated_data
         lecture, created = self.get_or_create_lecture(validated_data)
-        return self.process_attendance(lecture, user)
+        data= self.process_attendance(lecture, user)
+        context={'lat':location.split(' ')[0],
+                 'long':location.split(' ')[1]}
+        data.update(context)
+        return data
