@@ -25,18 +25,18 @@ class CreateLecturerAttendance(APIView):
             time_frame = lecture.time_frame
 
             if self.checkWithinInterval(recent_attendance, time_frame):
-                qr_data = f"previous_attendance_timestamp: {recent_attendance}_timeframe: {time_frame}_location: {lecture.location}_course_id: {lecture.course_id}"
+                qr_data = f"{recent_attendance}_{time_frame}_{lecture.location}_{lecture.course_id}"
                 message = "You have already generated a QR code"
             else:
                 lecturer_attendance = LecturerAttendance.objects.create(lecture=lecture, lecturer=request_user)
-                qr_data = f"new attendance timestamp: {lecturer_attendance.timestamp}_timeframe: {time_frame}_location: {lecture.location}_course_id: {lecture.course_id}"
+                qr_data = f"{lecturer_attendance.timestamp}_{time_frame}_{lecture.location}_{lecture.course_id}_exist"
                 message = "String for QR code"
 
         except LecturerAttendance.DoesNotExist:
             lecturer_attendance = LecturerAttendance.objects.create(lecture=lecture, lecturer=request_user)
             lecturer_attendance.save()
             time_frame = lecture.time_frame
-            qr_data = f"new attendance timestamp: {lecturer_attendance.timestamp}_timeframe: {time_frame}_location: {lecture.location}_course_id: {lecture.course_id}"
+            qr_data = f"{lecturer_attendance.timestamp}_{time_frame}_{lecture.location}_{lecture.course_id}_does not exist"
             message = "String for QR code"
 
         except Exception as e:
@@ -44,15 +44,13 @@ class CreateLecturerAttendance(APIView):
             return Response({'success': False, 'message': f'Error: {str(e)}', 'time_frame': time_frame}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({'success': True, 'message': message, 
-                         'data': qr_data,'time':timezone.now(),
-                         'latitude':location.split(' ')[0],
-                         'longtitude':location.split(' ')[-1],
-                          'course_id':course_id})
+                         'data': qr_data,'latitude':location.split(' ')[0],
+                         'longtitude':location.split(' ')[-1],'course_id':course_id})
 
     def checkWithinInterval(self, recent_time, time_frame):
         start_hour, end_hour = map(int, time_frame.split('-'))
         current_hour = int(recent_time.strftime("%H"))
-        return recent_time.date() == timezone.localtime().date() and min(start_hour,end_hour) <= current_hour <=max(start_hour,end_hour) 
+        return recent_time.date() == timezone.now().date() and min(start_hour,end_hour)<= current_hour <=max(start_hour,end_hour)
 
     def get_or_create_lecture(self, validated_data):
         lectures = Lecture.objects.filter(
@@ -70,10 +68,9 @@ class CreateLecturerAttendance(APIView):
     def post(self, request):
         user = request.user
         time_frame = request.data.get('time_frame')
-        location=request.data.get('location')
+        location = request.data.get('location')
         course_id=request.data.get('course')
-        request.data['lecturer'] = request.user.id
-        print(request.data)
+        request.data['lecturer']=request.user.id
 
         if user.is_student:
             return Response({'success': False, 'message': 'Only a lecturer can start a lecture'}, status=status.HTTP_403_FORBIDDEN)
@@ -81,18 +78,13 @@ class CreateLecturerAttendance(APIView):
         if not self.checkWithinInterval(timezone.localtime(), time_frame):
             return Response({
                 'success': False,
-                'message': 'The time you are trying to create this lecture is not within bounds of the current time frame',
-                'current_time':timezone.localtime().strftime("%H"),
+                'message': 'The time you are trying to create this lecture is not within bounds of the current time frame'
             },status=status.HTTP_400_BAD_REQUEST)
 
         serializer = LectureSerializer(data=request.data)
         if not serializer.is_valid():
-            errors = serializer.errors
-            return Response({'success': False, 
-                             'message': 'Invalid data provided','errors':errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
         lecture, created = self.get_or_create_lecture(validated_data)
-    
-        data=self.process_attendance(lecture, user,location,course_id)
-        return data
+        return self.process_attendance(lecture, user,location,course_id)
