@@ -25,18 +25,18 @@ class CreateLecturerAttendance(APIView):
             time_frame = lecture.time_frame
 
             if self.checkWithinInterval(recent_attendance, time_frame):
-                qr_data = f"{recent_attendance}_{time_frame}_{lecture.location}_{lecture.course_id}"
+                qr_data = f"previous_attendance_timestamp: {recent_attendance}_timeframe: {time_frame}_location: {lecture.location}_course_id: {lecture.course_id}"
                 message = "You have already generated a QR code"
             else:
                 lecturer_attendance = LecturerAttendance.objects.create(lecture=lecture, lecturer=request_user)
-                qr_data = f"{lecturer_attendance.timestamp}_{time_frame}_{lecture.location}_{lecture.course_id}_exist"
+                qr_data = f"current_timestamp: {lecturer_attendance.timestamp}_timeframe: {time_frame}_location: {lecture.location}_course_id: {lecture.course_id}"
                 message = "String for QR code"
 
         except LecturerAttendance.DoesNotExist:
             lecturer_attendance = LecturerAttendance.objects.create(lecture=lecture, lecturer=request_user)
             lecturer_attendance.save()
             time_frame = lecture.time_frame
-            qr_data = f"{lecturer_attendance.timestamp}_{time_frame}_{lecture.location}_{lecture.course_id}_does not exist"
+            qr_data = f"current_timestamp: {lecturer_attendance.timestamp}_timeframe: {time_frame}_;location: {lecture.location}_course_id: {lecture.course_id}"
             message = "String for QR code"
 
         except Exception as e:
