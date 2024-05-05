@@ -25,8 +25,8 @@ class LecturerAttendance(models.Model):
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
     lecturer = models.ForeignKey(User, 
                                  on_delete=models.CASCADE,
-                                 limit_choices_to={'is_student':False}
-                                 )
+                                 limit_choices_to={'is_student':False},
+                                 null=True,blank=True)
     timestamp = models.DateTimeField()
     def save(self, *args, **kwargs):
         # Convert timestamp to local time
