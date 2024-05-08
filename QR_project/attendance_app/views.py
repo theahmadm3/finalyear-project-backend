@@ -131,8 +131,10 @@ class CreateLecturerAttendance(APIView):
 
     def checkWithinInterval(self, recent_time, time_frame):
         start_hour, end_hour = map(int, time_frame.split('-'))
+        if end_hour ==0:
+            end_hour =24
         current_hour = int(recent_time.strftime("%H"))
-        return recent_time.date() == timezone.now().date() and start_hour <= current_hour <= end_hour
+        return recent_time.date() == timezone.now().date() and start_hour <= current_hour < end_hour
 
     def get_or_create_lecture(self, validated_data):
         lectures = Lecture.objects.filter(
