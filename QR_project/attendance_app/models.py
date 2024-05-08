@@ -33,7 +33,7 @@ class StudentAttendance(models.Model):
     lecture_attendance= models.ForeignKey(LecturerAttendance, on_delete=models.CASCADE,default=True)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
-    location = models.CharField(max_length=100)
+    #location = models.CharField(max_length=100)
 
    
 
