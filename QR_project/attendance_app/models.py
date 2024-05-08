@@ -14,11 +14,7 @@ class Lecture(models.Model):
     )
 
 
-class StudentAttendance(models.Model):
-    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    location = models.CharField(max_length=100)
+
 
     
 class LecturerAttendance(models.Model):
@@ -32,6 +28,12 @@ class LecturerAttendance(models.Model):
         # Convert timestamp to local time
         self.timestamp = timezone.localtime(self.timestamp)
         super().save(*args, **kwargs)
+
+class StudentAttendance(models.Model):
+    lecture_attendance= models.ForeignKey(LecturerAttendance, on_delete=models.CASCADE,default=True)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    location = models.CharField(max_length=100)
 
    
 
