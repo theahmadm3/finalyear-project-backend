@@ -24,46 +24,63 @@ class CreateStudentAttendance(APIView):
         '''
         This checks if student is late within 30 mins from the lecture time
         '''
-        current_hour = int(current_time.strftime("%H"))
-        current_min=int(current_time.strftime("%M"))
-        lecture_time_hour=int(lecture_time.strftime("%H"))
-        lecture_time_min=int(lecture_time.strftime("%M"))
-        if current_hour*60+current_min-(lecture_time_hour*60+current_min)<=32:
+        current_datetime = current_time.replace(second=0, microsecond=0)  # Ensure seconds and microseconds are zeroed
+        lecture_datetime = lecture_time.replace(second=0, microsecond=0)  # Ensure seconds and microseconds are zeroed
+
+        time_difference = current_datetime - lecture_datetime
+        total_minutes_difference = abs(time_difference.days * 24 * 60 + time_difference.seconds // 60)
+
+        if total_minutes_difference <= 30:
             return False
         return True
 
-    def checkIfStudentRecordedAttendance(self,student_email,lecture_attendance_id):
+    def checkIfStudentRecordedAttendance(self,student,lecture_attendance_id):
         '''
         This  checks if student has recorded attendance within the time the  the lecture is initiated
         this is necessary to prevent duplicacy so that student don't create duplicate attendance at a for a particular
         lecture created at a particular time 
         '''
-        attendance_record = StudentAttendance.objects.get(student_email=student_email,lecture_attendance=lecture_attendance_id)
-        return attendance_record.exists()
+        try:
+           attendance_record=StudentAttendance.objects.get(student=student,lecture_attendance=lecture_attendance_id)
+           return True
+        except StudentAttendance.DoesNotExist:
+            return False
+        
 
 
-    def createStudentAttendance(self,student_email,lecture_attendance_id):
+    def createStudentAttendance(self,student,lecture_attendance_id):
         '''
         This creates the studentAttendance for the particular student
         '''
-        StudentAttendance.objects.create(student_email=student_email, lecture_attendance_id=lecture_attendance_id)
-        
+        StudentAttendance.objects.create(student=student, lecture_attendance_id=lecture_attendance_id)
+    
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['lecture'],
+            properties={
+                'lecture': openapi.Schema(type=openapi.TYPE_INTEGER),
+            }
+        )
+    )   
 
     def post(self,request):
         if not request.user.is_student:
             return Response({"success":False,"message":"You are not a student"},status=400)
-        student_email=request.data.get('email')
+        student=request.user
         lecture_attendance_id=request.data.get('lecture')
+
         time_lecture_created=LecturerAttendance.objects.get(id=lecture_attendance_id).timestamp
         time_lecture_created=timezone.localtime(time_lecture_created)
         current_time=timezone.localtime()
+
         if self.checkIfStudentLate(time_lecture_created, current_time):
             return Response({'success':False,'message':"you are late"},status=400)
             
-        if self.checkIfStudentRecordedAttendance(self,student_email,lecture_attendance_id):
+        if self.checkIfStudentRecordedAttendance(student,lecture_attendance_id):
             return Response({'success':False,'message':'You have already Recorded Attendance'},status=400)
             
-        CreateStudentAttendance(student_email,lecture_attendance_id)
+        self.createStudentAttendance(student,lecture_attendance_id)
         return Response({'success':True,'message':"Attendance recorded successfully"},status=200)
             
             
@@ -83,25 +100,25 @@ class CreateLecturerAttendance(APIView):
     timezone.activate('Africa/Lagos')
     def process_attendance(self, lecture, request_user,location,course_id):
         try:
-            recent_attendance = LecturerAttendance.objects.filter(lecture=lecture, lecturer=request_user).latest('timestamp').timestamp
-            recent_attendance= timezone.localtime(recent_attendance)
+            recent_attendance = LecturerAttendance.objects.filter(lecture=lecture, lecturer=request_user).latest('timestamp')
+            recent_attendance_time= timezone.localtime(recent_attendance.timestamp)
             time_frame = lecture.time_frame
-            lecture_id=lecture.id
+            lecture_id=recent_attendance.id
 
-            if self.checkWithinInterval(recent_attendance, time_frame):
-                qr_data = {"timestamp":recent_attendance.strftime('%H:%M:%S'),"timeframe":time_frame,"lat": lecture.location.split(' ')[0],"long":lecture.location.split(' ')[1],"course_id":lecture.course_id,'time':recent_attendance.strftime('%H:%M:%S'),'lecture_id':lecture_id}
+            if self.checkWithinInterval(recent_attendance_time, time_frame):
+                qr_data = {"timestamp":recent_attendance_time.strftime('%H:%M:%S'),"timeframe":time_frame,"lat": lecture.location.split(' ')[0],"long":lecture.location.split(' ')[1],"course_id":lecture.course_id,'lecture_id':lecture_id}
                 message = "You have already generated a QR code"
             else:
                 lecturer_attendance = LecturerAttendance.objects.create(lecture=lecture, lecturer=request_user)
                 
-                qr_data = {"timestamp":lecturer_attendance.timestamp.strftime('%H:%M:%S'),"timeframe":time_frame,"lat": lecture.location.split(' ')[0],"course_id":lecture.course_id,'lecture_id':lecture_id}
+                qr_data = {"timestamp":lecturer_attendance.timestamp.strftime('%H:%M:%S'),"timeframe":time_frame,"lat": lecture.location.split(' ')[0],"course_id":lecture.course_id,'lecture_id':lecturer_attendance.id}
                 message = f"String for QR code"
 
         except LecturerAttendance.DoesNotExist:
             lecturer_attendance = LecturerAttendance.objects.create(lecture=lecture, lecturer=request_user)
             lecturer_attendance.save()
             time_frame = lecture.time_frame
-            lecture_id=lecture.id
+            lecture_id=lecturer_attendance.id
             qr_data = {"timestamp":lecturer_attendance.timestamp.strftime('%H:%M:%S') ,"timeframe":time_frame,"lat": lecture.location.split(' ')[0],"long":lecture.location.split(' ')[1],"course_id":lecture.course_id,'lecture_id':lecture_id}
             message = "String for QR code"
 
