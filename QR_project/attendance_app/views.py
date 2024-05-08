@@ -83,16 +83,6 @@ class CreateStudentAttendance(APIView):
         self.createStudentAttendance(student,lecture_attendance_id)
         return Response({'success':True,'message':"Attendance recorded successfully"},status=200)
             
-            
-            
-            
-            
-            
-
-
-        
-       
-
 
 class CreateLecturerAttendance(APIView):
     authentication_classes = [JWTAuthentication]
