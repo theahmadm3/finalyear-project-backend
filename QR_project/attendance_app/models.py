@@ -5,7 +5,7 @@ from django.utils import timezone
 
 class Lecture(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    location = models.CharField(max_length=100)
+    #location = models.CharField(max_length=100)
     time_frame = models.CharField(max_length=100,default=True)
     lecturer = models.ForeignKey(
         User,
