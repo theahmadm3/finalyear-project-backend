@@ -16,6 +16,40 @@ from django.utils import timezone
 import re
 
 
+class GetLecturerAttendancesForCourses(APIView):
+    pass
+
+
+class GetStudentAttendance(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['course_id'],
+            properties={
+                'course_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            }
+        )
+    )   
+    def post(self, request):
+        try: 
+           student=request.user
+           course_id=request.data.get('course_id')
+
+           filtered_student_attendance_count = StudentAttendance.objects.filter(student=student,lecture_attendance__lecture__course_id=course_id).count()
+           filtered_lecturer_attendance_count = LecturerAttendance.objects.filter(lecture__course=course_id).count()
+           if filtered_lecturer_attendance_count==0:score=0 
+           else:score=int(filtered_student_attendance_count/filtered_lecturer_attendance_count *100)
+
+           return Response({'success':True,
+                             'message':'Attendance retrieved successfully',
+                             'data':score},status=200)
+        except Exception as e:
+            return Response({'success':False,'message':str(e)},status=400)  
+
+
 class CreateStudentAttendance(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -121,10 +155,9 @@ class CreateLecturerAttendance(APIView):
 
     def checkWithinInterval(self, recent_time, time_frame):
         start_hour, end_hour = map(int, time_frame.split('-'))
-        if end_hour ==0:
-            end_hour =24
+        
         current_hour = int(recent_time.strftime("%H"))
-        return recent_time.date() == timezone.now().date() and start_hour <= current_hour < end_hour
+        return start_hour <= current_hour < end_hour
 
     def get_or_create_lecture(self, validated_data):
         lectures = Lecture.objects.filter(
