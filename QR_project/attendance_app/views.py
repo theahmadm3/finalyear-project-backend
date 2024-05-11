@@ -11,13 +11,28 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication 
 from .models import Lecture,StudentAttendance,LecturerAttendance
 from datetime import datetime
-from .serializers import LectureSerializer
+from .serializers import LectureSerializer,LecturerAttendanceSerializer
 from django.utils import timezone
 import re
 
 
 class GetLecturerAttendancesForCourses(APIView):
-    pass
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self,request,kwargs):
+        if  not request.user.is_student:
+            course_id=kwargs['course_id']
+            filltered_attendances=LecturerAttendance.objects.filter(lecture_course=course_id)
+            if filltered_attendances.count()>0:
+                serializer=LecturerAttendanceSerializer(filltered_attendances)
+                return Response({'success':True,'message':'Successfuly retrieved','data':serializer.data})
+            else:
+                return Response({'success':False,'message':'You did any lecture for this course'})
+            
+        else:
+            return Response({'success':False,'message':'You are not a lecturer'},status=400)
+
+        
 
 
 class GetStudentAttendance(APIView):
