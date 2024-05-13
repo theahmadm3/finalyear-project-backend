@@ -11,9 +11,33 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication 
 from .models import Lecture,StudentAttendance,LecturerAttendance
 from datetime import datetime
-from .serializers import LectureSerializer,LecturerAttendanceSerializer
+from .serializers import LectureSerializer,LecturerAttendanceSerializer,StudentAttendanceSerializer
 from django.utils import timezone
 import re
+
+class ViewStudentThatAttendedLecture(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if  request.user.is_student:
+            return Response({'success':False,
+                             'message':'Student can not access these records'},status=400)
+        else:
+            lectureAttendanceId = kwargs['lecture_attendance_id']
+            try:
+                attendanceRecord = StudentAttendance.objects.filter(lecture_attendance=lectureAttendanceId)
+                serializer = StudentAttendanceSerializer(instance=attendanceRecord, many=True)
+                return Response({'success':False,
+                                 'message':'Successfully retrieved',
+                                 'data':serializer.data},status=200)
+
+
+            except Exception as e:
+                return Response({'success':False,
+                                  'message':str(e)},status=400)
+        
+
 
 
 class GetLecturerAttendancesForCourses(APIView):
