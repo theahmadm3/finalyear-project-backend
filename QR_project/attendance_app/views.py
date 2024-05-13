@@ -19,12 +19,12 @@ import re
 class GetLecturerAttendancesForCourses(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    def get(self,request,kwargs):
+    def get(self, request, *args, **kwargs):
         if  not request.user.is_student:
             course_id=kwargs['course_id']
-            filltered_attendances=LecturerAttendance.objects.filter(lecture_course=course_id)
+            filltered_attendances=LecturerAttendance.objects.filter(lecture__course=course_id)
             if filltered_attendances.count()>0:
-                serializer=LecturerAttendanceSerializer(filltered_attendances)
+                serializer=LecturerAttendanceSerializer(instance=filltered_attendances, many=True)
                 return Response({'success':True,'message':'Successfuly retrieved','data':serializer.data})
             else:
                 return Response({'success':False,'message':'You did any lecture for this course'})
