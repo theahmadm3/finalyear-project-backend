@@ -27,10 +27,15 @@ class ViewStudentThatAttendedLecture(APIView):
             lectureAttendanceId = kwargs['lecture_attendance_id']
             try:
                 attendanceRecord = StudentAttendance.objects.filter(lecture_attendance=lectureAttendanceId)
-                serializer = StudentAttendanceSerializer(instance=attendanceRecord, many=True)
-                return Response({'success':False,
-                                 'message':'Successfully retrieved',
-                                 'data':serializer.data},status=200)
+                if attendanceRecord.count() > 0:
+                    serializer = StudentAttendanceSerializer(instance=attendanceRecord, many=True)
+                    return Response({'success':True,
+                                    'message':'Successfully retrieved',
+                                    'data':serializer.data},status=200)
+                else:
+                    return Response({'success':False,
+                                  'message':'No student attended this Lecture'},status=400)
+
 
 
             except Exception as e:
