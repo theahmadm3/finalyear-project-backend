@@ -14,10 +14,21 @@ class StudentUserSerializer(serializers.ModelSerializer):
 
 
 class StudentAttendanceSerializer(serializers.ModelSerializer):
-    student=StudentUserSerializer
+    student=StudentUserSerializer()
     class Meta:
         model=StudentAttendance
         fields=['student']
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        # Remove the "course_details" wrapper and flatten the representation
+        student_data = representation.pop('student')
+        # Move the lecturer's email directly under the course data
+        representation['id'] = student_data['id']
+        representation['first_name'] = student_data['first_name']
+        representation['last_name'] = student_data['last_name']
+        representation['student_id'] = student_data['student_id']
+        return representation
     
 
 
