@@ -1,9 +1,24 @@
-from .models import Lecture, LecturerAttendance
+from .models import Lecture, LecturerAttendance,StudentAttendance
 from rest_framework import serializers
 from django.utils import timezone
 from datetime import datetime
+from authentication.models import CustomUser
 
 
+
+class StudentUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = [ 'id','first_name', 'last_name', 'student_id']
+
+
+class StudentAttendanceSerializer(serializers.ModelSerializer):
+    student=StudentUserSerializer
+    class Meta:
+        model=StudentAttendance
+        fields=['student']
+    
 
 
 class LectureSerializer(serializers.ModelSerializer):
