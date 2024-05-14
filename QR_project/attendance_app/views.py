@@ -27,7 +27,7 @@ class ViewStudentThatAttendedLecture(APIView):
             lectureAttendanceId = kwargs['lecture_attendance_id']
             try:
                 attendanceRecord = StudentAttendance.objects.filter(lecture_attendance=lectureAttendanceId)
-                if attendanceRecord.count() > 0:
+                if attendanceRecord.exists():
                     serializer = StudentAttendanceSerializer(instance=attendanceRecord, many=True)
                     return Response({'success':True,
                                     'message':'Successfully retrieved',
@@ -52,7 +52,7 @@ class GetLecturerAttendancesForCourses(APIView):
         if  not request.user.is_student:
             course_id=kwargs['course_id']
             filltered_attendances=LecturerAttendance.objects.filter(lecture__course=course_id)
-            if filltered_attendances.count()>0:
+            if filltered_attendances.exists():
                 serializer=LecturerAttendanceSerializer(instance=filltered_attendances, many=True)
                 return Response({'success':True,'message':'Successfuly retrieved','data':serializer.data})
             else:
@@ -232,7 +232,7 @@ class CreateLecturerAttendance(APIView):
                 'message': 'The time you are trying to create this lecture is not within bounds of the current time frame'
             },status=status.HTTP_400_BAD_REQUEST)
         location_value = request.data.pop('location', None)
-        print(request.data)
+        
         serializer = LectureSerializer(data=request.data)
         if not serializer.is_valid():
             return Response({'success': False, 'message': 'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
