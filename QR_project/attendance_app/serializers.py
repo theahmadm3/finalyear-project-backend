@@ -53,8 +53,6 @@ class LecturerAttendanceSerializer(serializers.ModelSerializer):
         
         # Remove the "course_details" wrapper and flatten the representation
         lecture_data = representation.pop('lecture')
-        # Move the lecturer's email directly under the course data
-        representation['id'] = lecture_data['id']
         representation['time_frame'] = lecture_data['time_frame']
         time_str=representation['timestamp']
         time = datetime.fromisoformat(time_str)
