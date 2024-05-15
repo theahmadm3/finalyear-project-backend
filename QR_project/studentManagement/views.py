@@ -2,11 +2,29 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication 
 from authentication.models  import CustomUser
-from .serializers import StudentUserSerializer,StudentCoursesSerializer
+from .serializers import StudentUserSerializer,StudentCoursesSerializer,EnrolledStudentSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import StudentCourses
+
+class GetEnrolledStudents(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        course_id=kwargs.get('course_id')
+        enrolled_students=StudentCourses.objects.filter(course_details=course_id)
+        if enrolled_students.exists():
+            serializer=EnrolledStudentSerializer(instance=enrolled_students, many=True)
+            return Response({'success':True,
+                             'message':'Student retrieved successfully',
+                             'data':serializer.data},status=200)
+        else:
+            return Response({'success':False,'message':'No student enrolled at this course'},status=400)
+            
+
+
 
 
 

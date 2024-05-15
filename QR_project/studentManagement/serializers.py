@@ -18,7 +18,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class StudentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['student_id', 'email', 'first_name', 'last_name', 'is_student', 'level', 'department', 'country', 'phone_number']
+        fields = ['id','student_id', 'email', 'first_name', 'last_name', 'is_student', 'level', 'department', 'country', 'phone_number']
         ref_name = 'StudentManagementStudentUserSerializer'
 
 class StudentCoursesSerializer(serializers.ModelSerializer):
@@ -41,3 +41,22 @@ class StudentCoursesSerializer(serializers.ModelSerializer):
         # Merge the modified course_data into the representation
         representation.update(course_data)
         return representation
+
+
+class EnrolledStudentSerializer(serializers.ModelSerializer):
+    student=StudentUserSerializer() # Nested serializer for the Course model
+
+    class Meta:
+        model = StudentCourses
+        fields = ['student']
+
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        student_details=representation.pop('student')
+        representation['id']=student_details['id']
+        representation['first_name']=student_details['first_name']
+        representation['last_name']=student_details['last_name']
+        representation['student_id']=student_details['student_id']
+        return representation
+

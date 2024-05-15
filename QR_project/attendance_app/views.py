@@ -14,6 +14,49 @@ from datetime import datetime
 from .serializers import LectureSerializer,LecturerAttendanceSerializer,StudentAttendanceSerializer
 from django.utils import timezone
 import re
+import json
+class LecturerCreateStudentAtttendance(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['student_ids', 'lecture_attendance_id'],
+            properties={
+                'student_ids': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
+                'lecture_attendance_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            }
+        )
+    )
+    def post(self, request):
+        if request.user.is_student:
+            return Response({'success':False,'message':'Only a Lecturer can do this'},status=400)
+        def create_student_attendance(student_id, lecture_attendance_id):
+            try:
+                student_attendance = StudentAttendance.objects.get(student_id=student_id, lecture_attendance=lecture_attendance_id)
+                return False  # Attendance already exists
+            except StudentAttendance.DoesNotExist:
+                StudentAttendance.objects.create(student_id=student_id, lecture_attendance_id=lecture_attendance_id)
+                return True  # Attendance created successfully
+
+        try:
+            data = json.loads(request.body)
+            student_ids = data.get('student_ids', [])
+            lecture_attendance_id = data.get('lecture_attendance_id')
+
+            if isinstance(student_ids, list) and all(isinstance(item, int) for item in student_ids):
+                successes = []
+                for student_id in student_ids:
+                    success = create_student_attendance(student_id, lecture_attendance_id)
+                    if success:
+                        successes.append(student_id)
+
+                return Response({'success': True, 'message': 'Student Attendance created successfully'},status=200)
+            else:
+                return Response({'error': 'Invalid input. Expecting an array of integers.'}, status=400)
+        except Exception as e:
+            return Response({'error':str(e)}, status=400)
 
 class ViewStudentThatAttendedLecture(APIView):
     authentication_classes = [JWTAuthentication]

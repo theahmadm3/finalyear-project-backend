@@ -13,6 +13,14 @@ class StudentCourses(models.Model):
     )
 
 
+    class Meta:
+        # Define a unique constraint to ensure that a student can only take one course
+        unique_together = ('student', 'course_details')
+
+    def __str__(self):
+        return f"{self.student}'s Course: {self.course_details}"
+
+
 
 
 
